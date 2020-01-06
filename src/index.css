@@ -11,3 +11,26 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
     monospace;
 }
+
+.tablet {
+  margin: 10px;
+  position: relative;
+  border: 1px solid black;
+  width: 500px;
+  height: 500px;
+}
+
+.window {
+  border: 1px solid black;
+	background-image: url('https://files.coding4.coffee/selif/53hhruss.png');
+	background-size: 100% 100%;
+}
+
+.aspect-ratio {
+  height: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+/* vim:set ts=2:sw=2:et */
