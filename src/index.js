@@ -90,13 +90,14 @@ function App() {
     w: 3840,
     h: 1080
   });
-  const [subscreen, setSubscreen] = useState({x: 0, y: 0, w: 3840, h: 1080});
+  const [subscreen, setSubscreen] = useState({x: 2197, y: 165, w: 1366, h: 768});
   const [subscreenImage, setSubscreenImage] = useState();
   const [tablet, setTablet] = useState({w: 15200, h: 9500, pw: 152.0, ph: 95.0});
   const [projection, setProjection] = useState({x: 0, y: 0, w: 15200, h: 9500});
+
   return (
     <div className="App">
-      <details open>
+      <details>
         <summary>ScreenshotSelector</summary>
         <ScreenshotSelector setImage={setScreen} />
         <BoundForm
@@ -116,7 +117,7 @@ function App() {
         />
       </details>
       <hr />
-      <details open>
+      <details>
         <summary>DesktopDisplay</summary>
         <DesktopDisplay screen={screen} subscreen={subscreen} setSubscreen={setSubscreen} subscreenImage={subscreenImage} setSubscreenImage={setSubscreenImage} />
         <BoundForm
