@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 
-import { AspectRatioBox, ManagedRnd, VariableDisplay } from './util';
+import { AspectRatioBox, ManagedRnd } from './util';
 
 export function DesktopDisplay({screen, subscreen, setSubscreen, subscreenImage, setSubscreenImage}) {
   const [scalingFactor, setScalingFactor] = useState(1);
@@ -68,7 +68,63 @@ export function DesktopDisplay({screen, subscreen, setSubscreen, subscreenImage,
         handleDrag={handleDrag}
         handleResize={handleResize}
       />
-      <VariableDisplay {...size} scalingFactor={scalingFactor} />
+    </AspectRatioBox>
+  );
+}
+
+export function TabletDisplay({subscreenImage, tablet, projection, setProjection}) {
+  const [scalingFactor, setScalingFactor] = useState(1);
+
+  function rndPosToAbs(x, y) {
+    return {
+      x: Math.round((x + 1) * scalingFactor),
+      y: Math.round((y + 1) * scalingFactor)
+    };
+  }
+
+  function handleDrag({x, y}) {
+    setProjection({...projection, ...rndPosToAbs(x, y)});
+  }
+
+  function handleResize({x, y, w, h}) {
+    setProjection({
+      ...rndPosToAbs(x, y),
+      w: Math.round(w * tablet.w),
+      h: Math.round(h * tablet.h)
+    });
+  }
+
+  const rndPos = {
+    x: Math.round(projection.x / scalingFactor) + 1,
+    y: Math.round(projection.y / scalingFactor) + 1
+  };
+
+  const rndSize = {
+    w: projection.w / tablet.w,
+    h: projection.h / tablet.h
+  };
+
+  return (
+    <AspectRatioBox
+      size={{width: tablet.w, height: tablet.h}}
+      padding={{vertical: 0, horizontal: 20}}
+      style={{
+        border: '1px solid',
+        position: 'relative',
+        marginLeft: '10px'
+      }}
+      setScalingFactor={setScalingFactor}
+    >
+      <ManagedRnd
+        size={rndSize}
+        position={rndPos}
+        handleDrag={handleDrag}
+        handleResize={handleResize}
+        style={{
+          backgroundImage: `url(${subscreenImage})`,
+          backgroundSize: '100% 100%'
+        }}
+      />
     </AspectRatioBox>
   );
 }

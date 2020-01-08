@@ -59,7 +59,7 @@ export function BoundForm(props) {
 
     inputs.push(
       <label key={field}>
-        {props.schema[field].label || field}: <input type="number" name={field} value={props.data[field]} min={props.schema[field].min} max={props.schema[field].max} step={props.schema[field].step} onChange={handleChange} />
+        {props.schema[field].label || field}: <input type="number" name={field} value={props.data[field]} min={props.schema[field].min} max={props.schema[field].max} step={props.schema[field].step} disabled={props.schema[field].disabled} onChange={handleChange} />
       </label>
     );
   }

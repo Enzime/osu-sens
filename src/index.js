@@ -2,66 +2,10 @@ import React, { useState } from 'react';
 import ReactDOM from 'react-dom';
 
 import './index.css';
+import { DesktopDisplay, TabletDisplay } from './display';
 import { TabletMath } from './math';
-import { DesktopDisplay } from './desktop';
-import { AspectRatioBox, BoundForm, ManagedRnd } from './util';
-
-function TabletDisplay({subscreenImage, tablet, projection, setProjection}) {
-  const [scalingFactor, setScalingFactor] = useState(1);
-
-  function rndPosToAbs(x, y) {
-    return {
-      x: Math.round((x + 1) * scalingFactor),
-      y: Math.round((y + 1) * scalingFactor)
-    };
-  }
-
-  function handleDrag({x, y}) {
-    setProjection({...projection, ...rndPosToAbs(x, y)});
-  }
-
-  function handleResize({x, y, w, h}) {
-    setProjection({
-      ...rndPosToAbs(x, y),
-      w: Math.round(w * tablet.w),
-      h: Math.round(h * tablet.h)
-    });
-  }
-
-  const rndPos = {
-    x: Math.round(projection.x / scalingFactor) + 1,
-    y: Math.round(projection.y / scalingFactor) + 1
-  };
-
-  const rndSize = {
-    w: projection.w / tablet.w,
-    h: projection.h / tablet.h
-  };
-
-  return (
-    <AspectRatioBox
-      size={{width: tablet.w, height: tablet.h}}
-      padding={{vertical: 0, horizontal: 20}}
-      style={{
-        border: '1px solid',
-        position: 'relative',
-        marginLeft: '10px'
-      }}
-      setScalingFactor={setScalingFactor}
-    >
-      <ManagedRnd
-        size={rndSize}
-        position={rndPos}
-        handleDrag={handleDrag}
-        handleResize={handleResize}
-        style={{
-          backgroundImage: `url(${subscreenImage})`,
-          backgroundSize: '100% 100%'
-        }}
-      />
-    </AspectRatioBox>
-  );
-}
+import { TabletSelector } from './tablets';
+import { BoundForm } from './util';
 
 function ScreenshotSelector({setImage}) {
   function handleChange(e) {
@@ -100,6 +44,7 @@ function App() {
       <details>
         <summary>ScreenshotSelector</summary>
         <ScreenshotSelector setImage={setScreen} />
+
         <BoundForm
           data={screen}
           schema={{
@@ -116,10 +61,18 @@ function App() {
           setter={setScreen}
         />
       </details>
+
       <hr />
       <details>
         <summary>DesktopDisplay</summary>
-        <DesktopDisplay screen={screen} subscreen={subscreen} setSubscreen={setSubscreen} subscreenImage={subscreenImage} setSubscreenImage={setSubscreenImage} />
+        <DesktopDisplay
+          screen={screen}
+          subscreen={subscreen}
+          setSubscreen={setSubscreen}
+          subscreenImage={subscreenImage}
+          setSubscreenImage={setSubscreenImage}
+        />
+
         <BoundForm
           data={subscreen}
           schema={{
@@ -145,34 +98,24 @@ function App() {
           setter={setSubscreen}
         />
       </details>
+
       <hr />
       <details open>
         <summary>TabletDisplay</summary>
-        <BoundForm
-          data={tablet}
-          schema={{
-            w: {
-              min: 1,
-              label: "width"
-            },
-            h: {
-              min: 1,
-              label: "height"
-            },
-            pw: {
-              min: 1,
-              step: "any",
-              label: "physical width (mm)"
-            },
-            ph: {
-              min: 1,
-              step: "any",
-              label: "physical height (mm)"
-            }
-          }}
-          setter={setTablet}
+        <TabletSelector
+          tablet={tablet}
+          setTablet={setTablet}
+          projection={projection}
+          setProjection={setProjection}
         />
-        <TabletDisplay subscreenImage={subscreenImage} tablet={tablet} projection={projection} setProjection={setProjection} />
+
+        <TabletDisplay
+          subscreenImage={subscreenImage}
+          tablet={tablet}
+          projection={projection}
+          setProjection={setProjection}
+        />
+
         <BoundForm
           data={projection}
           schema={{
@@ -194,10 +137,16 @@ function App() {
           setter={setProjection}
         />
       </details>
+
       <hr />
       <details open>
         <summary>TabletMath</summary>
-        <TabletMath screen={screen} subscreen={subscreen} tablet={tablet} projection={projection} />
+        <TabletMath
+          screen={screen}
+          subscreen={subscreen}
+          tablet={tablet}
+          projection={projection}
+        />
       </details>
     </div>
   );
