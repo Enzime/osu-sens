@@ -47,10 +47,16 @@ export function AspectRatioBox(props) {
 }
 
 export function BoundForm(props) {
+  const [values, setValues] = useState(props.data);
+
+  useEffect(() => setValues(props.data), [props.data]);
+
   let inputs = [];
 
   function handleChange(e) {
-    props.setter({...props.data, [e.target.name]: Number(e.target.value)});
+    setValues({...values, [e.target.name]: Number(e.target.value)});
+    if (e.target.checkValidity())
+      props.setter({...props.data, [e.target.name]: Number(e.target.value)});
   }
 
   for (const field in props.data) {
@@ -59,7 +65,7 @@ export function BoundForm(props) {
 
     inputs.push(
       <label key={field}>
-        {props.schema[field].label || field}: <input type="number" name={field} value={props.data[field]} min={props.schema[field].min} max={props.schema[field].max} step={props.schema[field].step} disabled={props.schema[field].disabled} onChange={handleChange} />
+        {props.schema[field].label || field}: <input type="number" name={field} value={values[field]} min={props.schema[field].min} max={props.schema[field].max} step={props.schema[field].step} disabled={props.schema[field].disabled} onChange={handleChange} />
       </label>
     );
   }

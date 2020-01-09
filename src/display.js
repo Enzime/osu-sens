@@ -77,18 +77,22 @@ export function TabletDisplay({subscreenImage, tablet, projection, setProjection
 
   function rndPosToAbs(x, y) {
     return {
-      x: Math.round((x + 1) * scalingFactor),
-      y: Math.round((y + 1) * scalingFactor)
+      x: Math.round(x * scalingFactor),
+      y: Math.round(y * scalingFactor)
     };
   }
 
   function handleDrag({x, y}) {
-    setProjection({...projection, ...rndPosToAbs(x, y)});
+    // Drag and resize events from react-rnd emit different positions for the
+    // same spot, this is most likely a result of the bounding parent having
+    // a border which is probably inconsistently accounted for. Workaround this
+    // for now.
+    setProjection({...projection, ...rndPosToAbs(x + 1, y + 1)});
   }
 
   function handleResize({x, y, w, h}) {
     setProjection({
-      ...rndPosToAbs(x, y),
+      ...rndPosToAbs(x - 1, y - 1),
       w: Math.round(w * tablet.w),
       h: Math.round(h * tablet.h)
     });

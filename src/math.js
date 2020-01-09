@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 
 import { VariableDisplay } from './util';
 
@@ -13,7 +13,48 @@ function calculatePlayArea({x, y, w, h}) {
   }
 }
 
+function MatrixForm({matrix, setMatrix}) {
+  let inputs = [];
+
+  function handleChange(e) {
+    console.log(e.target.name, e.target.value);
+    setMatrix({...matrix, [e.target.name]: Number(e.target.value)});
+  }
+
+  for (const element in matrix) {
+    inputs.push(
+      <span key={element}>
+        <label htmlFor={element}>{element}: </label>
+        <input
+          type="text"
+          name={element}
+          id={element}
+          value={matrix[element]}
+          onChange={handleChange}
+        />
+      </span>
+    );
+  }
+
+  return (
+    <form>
+      {inputs}
+    </form>
+  );
+}
+
 export function TabletMath({screen, subscreen, tablet, projection}) {
+  const [matrix, setMatrix] = useState({});
+
+  useEffect(() => {
+    const scaleX = (subscreen.w / screen.w) * tablet.w / projection.w;
+    const scaleY = (subscreen.h / screen.h) * tablet.h / projection.h;
+    const offsetX = -(projection.x / tablet.w) * scaleX + (subscreen.x / screen.w);
+    const offsetY = -(projection.y / tablet.h) * scaleY + (subscreen.y / screen.h);
+
+    setMatrix({scaleX, scaleY, offsetX, offsetY});
+  }, [screen, subscreen, tablet, projection]);
+
   const playArea = calculatePlayArea(subscreen);
 
   // distance per tablet pixel (mm/tp)
@@ -39,17 +80,13 @@ export function TabletMath({screen, subscreen, tablet, projection}) {
   }
 
   // calculate coordinate transformation matrix elements
-  const xScale = (subscreen.w / screen.w) * tablet.w / projection.w;
-  const yScale = (subscreen.h / screen.h) * tablet.h / projection.h;
-  const xOffset = -(projection.x / tablet.w) * xScale + (subscreen.x / screen.w);
-  const yOffset = -(projection.y / tablet.h) * yScale + (subscreen.y / screen.h);
 
   return (
     <div>
-      <VariableDisplay scaleX={xScale} offsetX={xOffset} scaleY={yScale} offsetY={yOffset} />
+      <MatrixForm matrix={matrix} setMatrix={setMatrix} />
       <VariableDisplay mmX={mmX} mmY={mmY} />
       <VariableDisplay sensX={sensX} sensY={sensY} />
-      <pre>xinput set-prop "Wacom One by Wacom S Pen" "Coordinate Transformation Matrix" {xScale} 0 {xOffset} 0 {yScale} {yOffset} 0 0 1</pre>
+      <pre>xinput set-prop "Wacom One by Wacom S Pen" "Coordinate Transformation Matrix" {matrix.scaleX} 0 {matrix.offsetX} 0 {matrix.scaleY} {matrix.offsetY} 0 0 1</pre>
     </div>
   );
 }
