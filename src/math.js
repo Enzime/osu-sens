@@ -13,11 +13,53 @@ function calculatePlayArea({x, y, w, h}) {
   }
 }
 
+function MatrixCommand({matrix}) {
+  const [command, setCommand] = useState('xinput set-prop "Wacom One by Wacom S Pen" "Coordinate Transformation Matrix" ');
+
+  function handleBlur(e) {
+    setCommand(e.target.innerText);
+  }
+
+  function handleKeyPress(e) {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+    }
+  }
+
+  const matrixString = `${matrix.scaleX} 0 ${matrix.offsetX} 0 ${matrix.scaleY} ${matrix.offsetY} 0 0 1`;
+
+  function handleClick() {
+    navigator.clipboard.writeText(`${command}${matrixString}`);
+    alert('Copied command to clipboard');
+  }
+
+  return (
+    <div>
+      <button onClick={handleClick}>
+        <span role="img" aria-label="Copy to Clipboard">
+          📋
+        </span>
+      </button>
+      <pre>
+        <span
+          contentEditable={true}
+          suppressContentEditableWarning={true}
+          spellCheck={false}
+          onBlur={handleBlur}
+          onKeyPress={handleKeyPress}
+        >
+          {command}
+        </span>
+        {matrixString}
+      </pre>
+    </div>
+  );
+}
+
 function MatrixForm({matrix, setMatrix}) {
   let inputs = [];
 
   function handleChange(e) {
-    console.log(e.target.name, e.target.value);
     setMatrix({...matrix, [e.target.name]: Number(e.target.value)});
   }
 
@@ -31,6 +73,7 @@ function MatrixForm({matrix, setMatrix}) {
           id={element}
           value={matrix[element]}
           onChange={handleChange}
+          disabled={true}
         />
       </span>
     );
@@ -86,7 +129,7 @@ export function TabletMath({screen, subscreen, tablet, projection}) {
       <MatrixForm matrix={matrix} setMatrix={setMatrix} />
       <VariableDisplay mmX={mmX} mmY={mmY} />
       <VariableDisplay sensX={sensX} sensY={sensY} />
-      <pre>xinput set-prop "Wacom One by Wacom S Pen" "Coordinate Transformation Matrix" {matrix.scaleX} 0 {matrix.offsetX} 0 {matrix.scaleY} {matrix.offsetY} 0 0 1</pre>
+      <MatrixCommand matrix={matrix} />
     </div>
   );
 }
