@@ -55,8 +55,10 @@ export function BoundForm(props) {
 
   function handleChange(e) {
     setValues({...values, [e.target.name]: Number(e.target.value)});
-    if (e.target.checkValidity())
+
+    if (e.target.checkValidity()) {
       props.setter({...props.data, [e.target.name]: Number(e.target.value)});
+    }
   }
 
   for (const field in props.data) {

@@ -146,6 +146,7 @@ function App() {
           subscreen={subscreen}
           tablet={tablet}
           projection={projection}
+          setProjection={setProjection}
         />
       </details>
     </div>

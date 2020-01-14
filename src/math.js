@@ -14,7 +14,9 @@ function calculatePlayArea({x, y, w, h}) {
 }
 
 function MatrixCommand({matrix}) {
-  const [command, setCommand] = useState('xinput set-prop "Wacom One by Wacom S Pen" "Coordinate Transformation Matrix" ');
+  const [command, setCommand] = useState(
+    'xinput set-prop "Wacom One by Wacom S Pen" "Coordinate Transformation Matrix" '
+  );
 
   function handleBlur(e) {
     setCommand(e.target.innerText);
@@ -56,11 +58,46 @@ function MatrixCommand({matrix}) {
   );
 }
 
-function MatrixForm({matrix, setMatrix}) {
+function MatrixForm({matrix, setMatrix, updateProjection}) {
+  const [formValues, setFormValues] = useState({
+    scaleX: 1,
+    scaleY: 1,
+    offsetX: 0,
+    offsetY: 0
+  });
+
+  // two options: derived, form
+  const [overrideValues, setOverrideValues] = useState(false);
+
+  useEffect(() => {
+    if (overrideValues) {
+      setFormValues(matrix);
+    } else {
+      setOverrideValues(true);
+    }
+  }, [matrix]);
+
   let inputs = [];
 
   function handleChange(e) {
-    setMatrix({...matrix, [e.target.name]: Number(e.target.value)});
+    setOverrideValues(false);
+
+    const newFormValues = {...formValues, [e.target.name]: e.target.value};
+    setFormValues(newFormValues);
+
+    if (e.target.reportValidity()) {
+      let newMatrix = matrix;
+
+      for (const field in newFormValues) {
+        if (newFormValues[field] && !isNaN(newFormValues[field])) {
+          if (!field.startsWith('scale') || (field.startsWith('scale') && Number(newFormValues[field]) !== 0)) {
+            newMatrix[field] = newFormValues[field];
+          }
+        }
+      }
+
+      updateProjection(newMatrix);
+    }
   }
 
   for (const element in matrix) {
@@ -71,9 +108,10 @@ function MatrixForm({matrix, setMatrix}) {
           type="text"
           name={element}
           id={element}
-          value={matrix[element]}
+          value={formValues[element]}
           onChange={handleChange}
-          disabled={true}
+          pattern={element.startsWith('scale') ? "-?(0\\.\\d*[1-9]|[1-9]\\d*(\\.\\d+)?)" : "-?[0-9]*\\.?[0-9]+"}
+          required={true}
         />
       </span>
     );
@@ -86,8 +124,8 @@ function MatrixForm({matrix, setMatrix}) {
   );
 }
 
-export function TabletMath({screen, subscreen, tablet, projection}) {
-  const [matrix, setMatrix] = useState({});
+export function TabletMath({screen, subscreen, tablet, projection, setProjection}) {
+  const [matrix, setMatrix] = useState({scaleX: 1, scaleY: 1, offsetX: 0, offsetY: 0});
 
   useEffect(() => {
     const scaleX = (subscreen.w / screen.w) * tablet.w / projection.w;
@@ -97,6 +135,15 @@ export function TabletMath({screen, subscreen, tablet, projection}) {
 
     setMatrix({scaleX, scaleY, offsetX, offsetY});
   }, [screen, subscreen, tablet, projection]);
+
+  function updateProjection(newMatrix) {
+    setProjection({
+      x: Math.round((tablet.w / newMatrix.scaleX) * (subscreen.x / screen.w - newMatrix.offsetX)),
+      y: Math.round((tablet.h / newMatrix.scaleY) * (subscreen.y / screen.h - newMatrix.offsetY)),
+      w: Math.round((subscreen.w / screen.w) * tablet.w / newMatrix.scaleX),
+      h: Math.round((subscreen.h / screen.h) * tablet.h / newMatrix.scaleY)
+    });
+  }
 
   const playArea = calculatePlayArea(subscreen);
 
@@ -126,7 +173,11 @@ export function TabletMath({screen, subscreen, tablet, projection}) {
 
   return (
     <div>
-      <MatrixForm matrix={matrix} setMatrix={setMatrix} />
+      <MatrixForm
+        matrix={matrix}
+        setMatrix={setMatrix}
+        updateProjection={updateProjection}
+      />
       <VariableDisplay mmX={mmX} mmY={mmY} />
       <VariableDisplay sensX={sensX} sensY={sensY} />
       <MatrixCommand matrix={matrix} />
