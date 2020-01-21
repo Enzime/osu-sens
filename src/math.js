@@ -58,7 +58,7 @@ function MatrixCommand({matrix}) {
   );
 }
 
-function MatrixForm({matrix, setMatrix, updateProjection}) {
+function MatrixForm({matrix, updateProjection}) {
   const [formValues, setFormValues] = useState({
     scaleX: 1,
     scaleY: 1,
@@ -66,7 +66,6 @@ function MatrixForm({matrix, setMatrix, updateProjection}) {
     offsetY: 0
   });
 
-  // two options: derived, form
   const [overrideValues, setOverrideValues] = useState(false);
 
   useEffect(() => {
@@ -82,11 +81,11 @@ function MatrixForm({matrix, setMatrix, updateProjection}) {
   function handleChange(e) {
     setOverrideValues(false);
 
-    const newFormValues = {...formValues, [e.target.name]: e.target.value};
+    const newFormValues = {...matrix, [e.target.name]: e.target.value};
     setFormValues(newFormValues);
 
     if (e.target.reportValidity()) {
-      let newMatrix = matrix;
+      let newMatrix = {...matrix};
 
       for (const field in newFormValues) {
         if (newFormValues[field] && !isNaN(newFormValues[field])) {
@@ -110,8 +109,65 @@ function MatrixForm({matrix, setMatrix, updateProjection}) {
           id={element}
           value={formValues[element]}
           onChange={handleChange}
-          pattern={element.startsWith('scale') ? "-?(0\\.\\d*[1-9]|[1-9]\\d*(\\.\\d+)?)" : "-?[0-9]*\\.?[0-9]+"}
+          pattern={element.startsWith('scale') ? "(0\\.\\d*[1-9]|[1-9]\\d*(\\.\\d+)?)" : "-?[0-9]*\\.?[0-9]+"}
           required={true}
+        />
+      </span>
+    );
+  }
+
+  return (
+    <form>
+      {inputs}
+    </form>
+  );
+}
+
+function SensitivityForm({sensitivity, updateProjection}) {
+  const [formValues, setFormValues] = useState({x: 0, y: 0});
+
+  const [overrideValues, setOverrideValues] = useState(false);
+
+  useEffect(() => {
+    if (overrideValues) {
+      setFormValues(sensitivity);
+    } else {
+      setOverrideValues(true);
+    }
+  }, [sensitivity]);
+
+  let inputs = [];
+
+  function handleChange(e) {
+    setOverrideValues(false);
+
+    const newFormValues = {...sensitivity, [e.target.name]: e.target.value};
+    setFormValues(newFormValues);
+
+    if (e.target.reportValidity()) {
+      let newSensitivity = {...sensitivity};
+
+      for (const field in newFormValues) {
+        newSensitivity[field] = Number(newFormValues[field]);
+      }
+
+      updateProjection(newSensitivity);
+    }
+  }
+
+  for (const axis in sensitivity) {
+    inputs.push(
+      <span key={axis}>
+        <label htmlFor={axis}>sens{axis.toUpperCase()}: </label>
+        <input
+          type="text"
+          name={axis}
+          id={axis}
+          value={formValues[axis] === 0 ? "undefined" : formValues[axis]}
+          onChange={handleChange}
+          pattern={"0\\.\\d*[1-9]|[1-9]\\d*(\\.\\d+)?"}
+          required={true}
+          disabled={sensitivity[axis] === 0}
         />
       </span>
     );
@@ -126,17 +182,43 @@ function MatrixForm({matrix, setMatrix, updateProjection}) {
 
 export function TabletMath({screen, subscreen, tablet, projection, setProjection}) {
   const [matrix, setMatrix] = useState({scaleX: 1, scaleY: 1, offsetX: 0, offsetY: 0});
+  const [sensitivity, setSensitivity] = useState({x: 0, y: 0});
 
   useEffect(() => {
+    // calculate coordinate transformation matrix elements
     const scaleX = (subscreen.w / screen.w) * tablet.w / projection.w;
     const scaleY = (subscreen.h / screen.h) * tablet.h / projection.h;
     const offsetX = -(projection.x / tablet.w) * scaleX + (subscreen.x / screen.w);
     const offsetY = -(projection.y / tablet.h) * scaleY + (subscreen.y / screen.h);
 
     setMatrix({scaleX, scaleY, offsetX, offsetY});
+
+    const playArea = calculatePlayArea(subscreen);
+
+    if (playArea) {
+      // osu!pixels per screen pixel (op/sp)
+      const op_per_sx = 512 / playArea.w;
+      const op_per_sy = 384 / playArea.h;
+
+      // screen pixels per tablet pixel (sp/tp)
+      const sx_per_tx = subscreen.w / projection.w;
+      const sy_per_ty = subscreen.h / projection.h;
+
+      // tablet pixels per mm (tp/mm)
+      const tx_per_mm = tablet.w / tablet.pw;
+      const ty_per_mm = tablet.h / tablet.ph;
+
+      // sensitivity = osu!pixels per mm
+      setSensitivity({
+        x: op_per_sx * sx_per_tx * tx_per_mm,
+        y: op_per_sy * sy_per_ty * ty_per_mm
+      });
+    } else {
+      setSensitivity({x: 0, y: 0});
+    }
   }, [screen, subscreen, tablet, projection]);
 
-  function updateProjection(newMatrix) {
+  function updateProjectionFromCTM(newMatrix) {
     setProjection({
       x: Math.round((tablet.w / newMatrix.scaleX) * (subscreen.x / screen.w - newMatrix.offsetX)),
       y: Math.round((tablet.h / newMatrix.scaleY) * (subscreen.y / screen.h - newMatrix.offsetY)),
@@ -145,7 +227,13 @@ export function TabletMath({screen, subscreen, tablet, projection, setProjection
     });
   }
 
-  const playArea = calculatePlayArea(subscreen);
+  function updateProjectionFromSensitivity(newSensitivity) {
+    setProjection({
+      ...projection,
+      w: Math.round(projection.w * sensitivity.x / newSensitivity.x),
+      h: Math.round(sensitivity.y * projection.h / newSensitivity.y)
+    });
+  }
 
   // distance per tablet pixel (mm/tp)
   const mm_per_tx = tablet.pw / tablet.w;
@@ -154,32 +242,17 @@ export function TabletMath({screen, subscreen, tablet, projection, setProjection
   const mmX = mm_per_tx * projection.w;
   const mmY = mm_per_ty * projection.h;
 
-  let sensX, sensY;
-
-  if (playArea) {
-    // tablet pixel per screen pixel (tp/sp)
-    const tx_per_sx = projection.w / subscreen.w;
-    const ty_per_sy = projection.h / subscreen.h;
-
-    // screen pixel per osu!pixel (sp/op)
-    const sx_per_op = playArea.w / 512;
-    const sy_per_op = playArea.h / 384;
-
-    sensX = 1/(mm_per_tx * tx_per_sx * sx_per_op);
-    sensY = 1/(mm_per_ty * ty_per_sy * sy_per_op);
-  }
-
-  // calculate coordinate transformation matrix elements
-
   return (
     <div>
       <MatrixForm
         matrix={matrix}
-        setMatrix={setMatrix}
-        updateProjection={updateProjection}
+        updateProjection={updateProjectionFromCTM}
       />
       <VariableDisplay mmX={mmX} mmY={mmY} />
-      <VariableDisplay sensX={sensX} sensY={sensY} />
+      <SensitivityForm
+        sensitivity={sensitivity}
+        updateProjection={updateProjectionFromSensitivity}
+      />
       <MatrixCommand matrix={matrix} />
     </div>
   );
