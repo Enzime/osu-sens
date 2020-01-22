@@ -8,7 +8,14 @@ function calculatePlayArea({x, y, w, h}) {
       x: x + 273,
       y: y + 89,
       w: 820,
-      h: 615,
+      h: 615
+    }
+  } else if (w === 1920 && h === 1080) {
+    return {
+      x: x + 280,
+      y: y + 123,
+      w: 1152,
+      h: 864
     }
   }
 }
