@@ -1,0 +1,22 @@
+{
+  "files": {
+    "main.css": "/osu-sens/static/css/main.e7bba27a.chunk.css",
+    "main.js": "/osu-sens/static/js/main.3ad83b4e.chunk.js",
+    "main.js.map": "/osu-sens/static/js/main.3ad83b4e.chunk.js.map",
+    "runtime-main.js": "/osu-sens/static/js/runtime-main.a83e3e68.js",
+    "runtime-main.js.map": "/osu-sens/static/js/runtime-main.a83e3e68.js.map",
+    "static/js/2.a586d938.chunk.js": "/osu-sens/static/js/2.a586d938.chunk.js",
+    "static/js/2.a586d938.chunk.js.map": "/osu-sens/static/js/2.a586d938.chunk.js.map",
+    "index.html": "/osu-sens/index.html",
+    "precache-manifest.59190bd6906774905eed0e8d3e5c04ea.js": "/osu-sens/precache-manifest.59190bd6906774905eed0e8d3e5c04ea.js",
+    "service-worker.js": "/osu-sens/service-worker.js",
+    "static/css/main.e7bba27a.chunk.css.map": "/osu-sens/static/css/main.e7bba27a.chunk.css.map",
+    "static/js/2.a586d938.chunk.js.LICENSE": "/osu-sens/static/js/2.a586d938.chunk.js.LICENSE"
+  },
+  "entrypoints": [
+    "static/js/runtime-main.a83e3e68.js",
+    "static/js/2.a586d938.chunk.js",
+    "static/css/main.e7bba27a.chunk.css",
+    "static/js/main.3ad83b4e.chunk.js"
+  ]
+}
