@@ -1,10 +1,10 @@
 self.__precacheManifest = (self.__precacheManifest || []).concat([
   {
-    "revision": "90fe24209031ababd65fdec0f66c1893",
+    "revision": "1de812e6ec0f796cac0101eafa0e35ae",
     "url": "/osu-sens/index.html"
   },
   {
-    "revision": "88dd01f7b418a586219f",
+    "revision": "cdfdd0c5820986c2db7b",
     "url": "/osu-sens/static/css/main.e7bba27a.chunk.css"
   },
   {
@@ -16,8 +16,8 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
     "url": "/osu-sens/static/js/2.a586d938.chunk.js.LICENSE"
   },
   {
-    "revision": "88dd01f7b418a586219f",
-    "url": "/osu-sens/static/js/main.3ad83b4e.chunk.js"
+    "revision": "cdfdd0c5820986c2db7b",
+    "url": "/osu-sens/static/js/main.444bbd15.chunk.js"
   },
   {
     "revision": "6e09a68643e7c34ab563",

@@ -14,7 +14,7 @@
 importScripts("https://storage.googleapis.com/workbox-cdn/releases/4.3.1/workbox-sw.js");
 
 importScripts(
-  "/osu-sens/precache-manifest.59190bd6906774905eed0e8d3e5c04ea.js"
+  "/osu-sens/precache-manifest.6f35e1169cba50d71fc07b31bf5590a2.js"
 );
 
 self.addEventListener('message', (event) => {
