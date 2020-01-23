@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import ReactDOM from 'react-dom';
 
 import './index.css';
+import screenshot from './images/desktop.png';
 import { DesktopDisplay, TabletDisplay } from './display';
 import { TabletMath } from './math';
 import { TabletSelector } from './tablets';
@@ -30,7 +31,7 @@ function ScreenshotSelector({setImage}) {
 
 function App() {
   const [screen, setScreen] = useState({
-    image: 'http://192.168.0.3:8080/Pictures/Screenshots.phi/19-12-19_23-11-03.png',
+    image: screenshot,
     w: 3840,
     h: 1080
   });
